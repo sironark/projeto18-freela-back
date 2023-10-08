@@ -4,18 +4,21 @@ import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from 'uuid';
 
 export async function postSignup(req,res){
-  const {name, email, password} = req.body;
+  const {name, email, password, city, phone} = req.body;
     try {
+      // verify unique email
       const verifyEmail = await db.query(`SELECT users.email 
       FROM users 
       WHERE email = $1;`,[email]);
-
       if (verifyEmail.rowCount) return res.status(409).send();
       
+      // hash password
       const passwordHash = bcrypt.hashSync(password, 10);
+
+      // insert data user
       await db.query(`INSERT INTO users 
-      (name, email, password) 
-      VALUES ($1, $2, $3);`,[name, email, passwordHash]);
+      (name, email, city, phone, password) 
+      VALUES ($1, $2, $3, $4, $5);`,[name, email,city, phone, passwordHash]);
       
         res.status(201).send();
 
