@@ -7,10 +7,11 @@ export async function insertService(title,description,price,userId){
     [title, userId, description, price]);
 }
 
-export async function searchServiceId(userId){
+export async function searchServiceId(title, description){
     return db.query(`SELECT id 
     FROM services 
-    WHERE "userId" = $1;`,[userId]);
+    WHERE description = $1 
+    AND title = $2;`,[description, title]);
 }
 
 export async function insertPhoto(ph, serviceId){
@@ -44,4 +45,8 @@ export async function getFullservices(){
 export async function getAllPhotos(){
     return await db.query(`SELECT *
     FROM photos;`)
+}
+
+export async function verifyTitle(title, userId){
+    return db.query(`SELECT * FROM services WHERE title = $1 AND "userId" = $2;`,[title, userId])
 }

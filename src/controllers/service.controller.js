@@ -1,13 +1,15 @@
-import { getAllPhotos, getFullservices, insertPhoto, insertService, searchServiceId, selectServiceByid, verifyService } from "../repository/service.repository.js";
+import { getAllPhotos, getFullservices, insertPhoto, insertService, searchServiceId, selectServiceByid, verifyService, verifyTitle } from "../repository/service.repository.js";
 
 export async function postService(req,res){
     const {userId} = res.locals.sessions;
     const {title, description, price, photos} = req.body;
     
     try {
+        const verify = await verifyTitle(title, userId)
+        if(verify.rowCount) return res.status(400).send(); 
         // insert the service
         await insertService(title,description,price,userId);
-        const serviceId = await searchServiceId(userId);
+        const serviceId = await searchServiceId(title, description);
         
         // insert each photo to photos table with the respective serviceId
         await photos.forEach(ph => {
@@ -26,8 +28,8 @@ export async function getServicesById(req,res){
 
     try {
         //verify if is exists
-        const verify = verifyService(id);
-        if(!verify.rowsCount) return res.status(404).send();
+        const verify = await verifyService(id);
+        if(!verify.rowCount) return res.status(404).send();
         // get the service by its id
         const serviceById = await selectServiceByid(id)
         res.status(200).send(serviceById.rows[0]);
@@ -38,7 +40,7 @@ export async function getServicesById(req,res){
   }
 
   
-  export async function getServices(req,res){
+export async function getServices(req,res){
     
     try {
         // get all services
@@ -63,5 +65,5 @@ export async function getServicesById(req,res){
       } catch (err) {
         res.status(500).send(err.message);
       }
-  }
+ }
 
